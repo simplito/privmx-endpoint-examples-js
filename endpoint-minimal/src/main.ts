@@ -68,8 +68,8 @@ async function createUsers() {
    * Check `registerUser` function for implementation
    */
   console.info("Registering user1");
-  console.info("Registering user1");
-  users.user2.pubKey = await registerUser(users.user2.userId, privKey2);
+  console.info("Registering user2");
+  users.user1.pubKey = await registerUser(users.user1.userId, privKey1);
   users.user2.pubKey = await registerUser(users.user2.userId, privKey2);
 
   console.log("Creating endpoint context");
