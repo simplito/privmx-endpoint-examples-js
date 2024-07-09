@@ -36,7 +36,7 @@ export const env = {
  * Cloud is an admin panel used for managing contexts, solutions and users inside of them
  * This can be used for programmatically creating/deleting contexts for your application needs
  */
-const CLOUD_URL = "https://cloud.pmxbox.com/main";
+const CLOUD_URL = "https://api.privmx.cloud/main";
 
 /**
  * Registers new user id / priv key pair in PrivMXCloud
