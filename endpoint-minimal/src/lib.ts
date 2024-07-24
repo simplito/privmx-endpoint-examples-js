@@ -38,6 +38,7 @@ export const env = {
  */
 const CLOUD_URL = "https://api.privmx.cloud/main";
 
+
 /**
  * Registers new user id / priv key pair in PrivMXCloud
  *
@@ -105,3 +106,25 @@ export async function registerUser(userId: string, privkey: string) {
 
   return userPubKey;
 }
+
+
+export const readFile = (file: File): Promise<Uint8Array> => {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+
+    fileReader.onload = (event) => {
+      const arrayBuffer = event.target?.result;
+      if (arrayBuffer) {
+        resolve(new Uint8Array(arrayBuffer as ArrayBuffer));
+      } else {
+        reject(new Error("Failed to read file."));
+      }
+    };
+
+    fileReader.onerror = () => {
+      reject(new Error("File could not be read."));
+    };
+
+    fileReader.readAsArrayBuffer(file);
+  });
+};
