@@ -1,8 +1,9 @@
 import "./style.css";
 import typescriptLogo from "./typescript.svg";
-import { Platform, StoreClient } from "@simplito/privmx-endpoint-web-sdk";
-import { env, registerUser } from "./lib";
-import { ThreadClient } from "@simplito/privmx-endpoint-web-sdk";
+import { readFile, registerUser } from "./lib";
+import { Platform } from "@simplito/privmx-endpoint-web-sdk";
+import { env } from "./lib";
+
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div>
@@ -10,7 +11,6 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <a href="https://www.typescriptlang.org/" target="_blank">
       <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
     </a>
-    <h1>Minimal PrivMX Endpoint</h1>
     <h1>Minimal PrivMX Endpoint</h1>
     <p class="read-the-docs">
       Open console to use endpoint methods
@@ -119,15 +119,17 @@ async function runThread() {
   /*
    * ThreadClient is wrapper class that expose high level api for working with Thread
    */
-  const thread = new ThreadClient(threadId);
-
+ const thread = ctx.thread(threadId);
   /*
     Finally we can send message. Messages inside Threads consists of three fields.
     Data is a content of Message, private Data is a metadata about message and
     Public Data is a metadata that won't be encrypted before sending, which allows your server to read it.
   */
-  const msgId = await thread.sendMessage({ data: "New Message" });
-
+ const msgId = await thread.sendMessage({
+    data: "New Message",
+    privateMeta: {},
+    publicMeta: {},
+  });
   console.log("Message sent" + msgId);
   /**
    * After sending, we can download a list of all messages
@@ -151,17 +153,21 @@ async function runStore() {
   });
   console.info("Store created with id " + storeId);
 
-  const store = new StoreClient(storeId);
-
+  const store = ctx.store(storeId);
   let file;
 
   const input = document.createElement("input");
   input.type = "file";
   await new Promise((resolve) => {
     input.addEventListener("change", async (e) => {
-      file = (e.target as any).files[0];
+      file = (e.target as unknown as { files: File[] }).files[0];
       console.info(`Sending file: "${file.name}" to store "Test store"`);
-      const id = await store.uploadFile(file);
+      const fileData = await readFile(file);
+      const id = await store.uploadFile({
+        data: fileData,
+        mimeType: file.type,
+        name: file.name,
+      });
       console.log("File sent new file id: ", id);
       resolve(id);
     });
@@ -179,17 +185,16 @@ async function runStore() {
    * We can change name or add/remove user from Store using `storeUpdate`
    * It will override all fields using those passed to the storeUpdate
    */
-  await store.storeUpdate({
-    storeId: storeId,
+  ;
+  await store.update({
     users: usersList,
     managers: usersList,
-    name: "New name for store",
+    title: "New name for store",
     version: 1,
-    force: false,
   });
 
   console.log("Getting info about store");
-  const storeInfo = await store.getInfo();
+  const storeInfo = await store.info();
   console.log("Store info", storeInfo);
 }
 
